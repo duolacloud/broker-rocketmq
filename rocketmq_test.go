@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/duolacloud/broker-core"
-	rocketmq "github.com/duolacloud/broker-core-rocketmq"
+	rocketmq "github.com/duolacloud/broker-rocketmq"
 )
 
 func TestRocketmq(t *testing.T) {
