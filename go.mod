@@ -1,4 +1,4 @@
-module github.com/duolacloud/broker-core-rocketmq
+module github.com/duolacloud/broker-rocketmq
 
 go 1.18
 
