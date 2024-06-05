@@ -174,7 +174,7 @@ func (k *kBroker) Options() broker.Options {
 	return k.opts
 }
 
-func (k *kBroker) Publish(topic string, msg *broker.Message, o ...broker.PublishOption) error {
+func (k *kBroker) Publish(ctx context.Context, topic string, msg *broker.Message, o ...broker.PublishOption) error {
 	pubopts := broker.PublishOptions{
 		Context: context.Background(),
 	}
@@ -210,7 +210,7 @@ func (k *kBroker) Publish(topic string, msg *broker.Message, o ...broker.Publish
 	}
 
 	if k.producer != nil {
-		_, err = k.producer.SendSync(context.Background(), m)
+		_, err = k.producer.SendSync(ctx, m)
 		return err
 	}
 
@@ -240,7 +240,7 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 					p.err = err
 					p.m.Body = msg.Body
 					if eh != nil {
-						eh(p)
+						eh(ctx, p)
 					} else {
 						log.Printf("[rocketmq] failed to unmarshal: %v\n", err)
 					}
@@ -260,13 +260,13 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 				m.Partition = int32(msg.Queue.QueueId)
 			}
 
-			err := handler(p)
+			err := handler(ctx, p)
 			if err == nil && subopts.AutoAck {
 				// continue
 			} else if err != nil {
 				p.err = err
 				if eh != nil {
-					eh(p)
+					eh(ctx, p)
 				}
 
 				// at lease once, some message may reconsume

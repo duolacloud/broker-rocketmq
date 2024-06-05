@@ -3,7 +3,7 @@ module github.com/duolacloud/broker-rocketmq
 go 1.18
 
 require (
-	github.com/duolacloud/broker-core v0.0.4
+	github.com/duolacloud/broker-core v0.0.5-0.20240605111610-c8619ff3e84b
 	github.com/google/uuid v1.6.0
 )
 

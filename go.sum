@@ -14,6 +14,10 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/duolacloud/broker-core v0.0.4 h1:s+zZ+CTKfTr/7Mv8yccAQTp65uHTsgL62WmZ4AWX1tk=
 github.com/duolacloud/broker-core v0.0.4/go.mod h1:bthNWNlkCKtpcB5qRsGefz8+tmVp1TDMCu4b/0wdkB4=
+github.com/duolacloud/broker-core v0.0.5-0.20240605111030-040d9a294984 h1:2MOWkE7TiW9rdJfEeeimoOYW8p4zHSggHPudd5qzFlU=
+github.com/duolacloud/broker-core v0.0.5-0.20240605111030-040d9a294984/go.mod h1:kJo0yD81jOttBPXwJoJd23Y1M7qaiCKWMSZ2uOlClVA=
+github.com/duolacloud/broker-core v0.0.5-0.20240605111610-c8619ff3e84b h1:Nka1PsFJuriDQVWnf9cElgtmsXfsAHNknMh2K7AcebY=
+github.com/duolacloud/broker-core v0.0.5-0.20240605111610-c8619ff3e84b/go.mod h1:kJo0yD81jOttBPXwJoJd23Y1M7qaiCKWMSZ2uOlClVA=
 github.com/eapache/go-resiliency v1.3.0 h1:RRL0nge+cWGlxXbUzJ7yMcq6w2XBEr19dCN6HECGaT0=
 github.com/eapache/go-resiliency v1.3.0/go.mod h1:5yPzW0MIvSe0JDsv0v+DvcjEv2FyD6iZYSs1ZI+iQho=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 h1:YEetp8/yCZMuEPMUDHG0CW/brkkEp8mzqk2+ODEitlw=

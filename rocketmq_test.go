@@ -1,6 +1,7 @@
 package rocketmq_test
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -10,6 +11,8 @@ import (
 )
 
 func TestRocketmq(t *testing.T) {
+	ctx := context.Background()
+
 	b := rocketmq.NewBroker(
 		broker.Addrs("127.0.0.1:9876"),
 		rocketmq.WithRetry(3),
@@ -21,7 +24,7 @@ func TestRocketmq(t *testing.T) {
 
 	topic := "test"
 
-	_, err := b.Subscribe(topic, func(e broker.Event) error {
+	_, err := b.Subscribe(topic, func(ctx context.Context, e broker.Event) error {
 		m := e.Message()
 		t.Logf("subscribe event: %v\n ", m.Body)
 
@@ -40,7 +43,7 @@ func TestRocketmq(t *testing.T) {
 
 	body, _ := json.Marshal(m)
 
-	if err := b.Publish(topic, &broker.Message{
+	if err := b.Publish(ctx, topic, &broker.Message{
 		Body: body,
 	}, rocketmq.WithShardingKey("a")); err != nil {
 		t.Fatal(err)
