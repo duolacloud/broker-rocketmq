@@ -195,6 +195,7 @@ func (k *kBroker) Publish(ctx context.Context, topic string, msg *broker.Message
 	}
 
 	m := primitive.NewMessage(topic, body)
+	m.WithProperties(msg.Header)
 
 	delayLevelValue := pubopts.Context.Value(delayLevelConfigKey{})
 	if delayLevelValue != nil {
@@ -239,6 +240,7 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 				if err := k.opts.Codec.Unmarshal(msg.Body, &m); err != nil {
 					p.err = err
 					p.m.Body = msg.Body
+					p.m.Header = msg.GetProperties()
 					if eh != nil {
 						eh(ctx, p)
 					} else {
