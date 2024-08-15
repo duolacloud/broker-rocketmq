@@ -257,11 +257,6 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 				p.m.Header = msg.GetProperties()
 			}
 
-			// if we don't have headers, create empty map
-			if m.Header == nil {
-				m.Header = make(map[string]string)
-			}
-
 			if msg.Queue != nil {
 				m.Partition = int32(msg.Queue.QueueId)
 			}
