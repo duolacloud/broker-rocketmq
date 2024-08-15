@@ -240,7 +240,7 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 				if err := k.opts.Codec.Unmarshal(msg.Body, &m); err != nil {
 					p.err = err
 					p.m.Body = msg.Body
-					p.m.Header = msg.GetProperties()
+
 					if eh != nil {
 						eh(ctx, p)
 					} else {
@@ -251,6 +251,10 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 
 			if p.m.Body == nil {
 				p.m.Body = msg.Body
+			}
+			
+			if p.m.Header == nil {
+				p.m.Header = msg.GetProperties()
 			}
 
 			// if we don't have headers, create empty map
