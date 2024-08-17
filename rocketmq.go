@@ -15,6 +15,11 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/duolacloud/broker-core"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type kBroker struct {
@@ -94,6 +99,10 @@ func (k *kBroker) Connect() error {
 		rpopts = append(rpopts, producer.WithRetry(retry))
 	}
 
+	interceptors, _ := k.opts.Context.Value(producerInterceptorsConfigKey{}).([]primitive.Interceptor)
+	interceptors = append(interceptors, producerDefaultInterceptor(k))
+	rpopts = append(rpopts, producer.WithInterceptor(interceptors...))
+
 	producer, err := _rocketmq.NewProducer(
 		rpopts...,
 	)
@@ -109,6 +118,10 @@ func (k *kBroker) Connect() error {
 
 	if consumeGoroutineNums, ok := k.opts.Context.Value(consumeGoroutineNumsConfigKey{}).(int); ok {
 		rcopts = append(rcopts, consumer.WithConsumeGoroutineNums(consumeGoroutineNums))
+	}
+
+	if interceptors, ok := k.opts.Context.Value(consumerInterceptorsConfigKey{}).([]primitive.Interceptor); ok {
+		rcopts = append(rcopts, consumer.WithInterceptor(interceptors...))
 	}
 
 	consumer, err := _rocketmq.NewPushConsumer(
@@ -228,8 +241,47 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 		opt(&subopts)
 	}
 
-	err := k.consumer.Subscribe(topic, consumer.MessageSelector{}, func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+	groupName, _ := k.opts.Context.Value(groupNameConfigKey{}).(string)
+
+	tracer := otel.Tracer("rocketmq")
+	attrs := []attribute.KeyValue{
+		semconv.MessagingSystemKey.String("rocketmq"),
+		semconv.MessagingRocketmqClientGroupKey.String(groupName),
+		// semconv.MessagingRocketmqClientIDKey.String(cc.InstanceName),
+		// semconv.MessagingRocketmqConsumptionModelKey.String(cc.MessageModel),
+	}
+
+	fn := func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+		tracingEnabled, _ := k.opts.Context.Value(tracingEnabledConfigKey{}).(bool)
+
 		for _, msg := range msgs {
+			var (
+				span trace.Span
+			)
+
+			if tracingEnabled {
+				carrier := propagation.MapCarrier{}
+
+				for key, value := range msg.GetProperties() {
+					carrier[key] = value
+				}
+
+				propagator := propagation.NewCompositeTextMapPropagator(propagation.TraceContext{})
+				ctx = propagator.Extract(ctx, carrier)
+				opts := []trace.SpanStartOption{}
+				opts = append(opts, trace.WithAttributes(attrs...))
+				opts = append(opts, trace.WithSpanKind(trace.SpanKindConsumer))
+
+				ctx, span = tracer.Start(ctx, msg.Topic, opts...)
+
+				span.SetAttributes(
+					semconv.MessagingRocketmqNamespaceKey.String(msg.Topic),
+					semconv.MessagingRocketmqMessageTagKey.String(msg.GetTags()),
+				)
+
+				defer span.End()
+			}
+
 			var m broker.Message
 
 			p := &publication{m: &m, t: msg.Topic, km: msg, consumer: k.consumer}
@@ -252,7 +304,7 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 			if p.m.Body == nil {
 				p.m.Body = msg.Body
 			}
-			
+
 			if p.m.Header == nil {
 				p.m.Header = msg.GetProperties()
 			}
@@ -265,6 +317,10 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 			if err == nil && subopts.AutoAck {
 				// continue
 			} else if err != nil {
+				if tracingEnabled && span != nil {
+					span.RecordError(err)
+				}
+
 				p.err = err
 				if eh != nil {
 					eh(ctx, p)
@@ -276,7 +332,9 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, o ...broker.Su
 		}
 
 		return consumer.ConsumeSuccess, nil
-	})
+	}
+
+	err := k.consumer.Subscribe(topic, consumer.MessageSelector{}, fn)
 	if err != nil {
 		return nil, err
 	}

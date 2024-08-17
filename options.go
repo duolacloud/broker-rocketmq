@@ -3,8 +3,21 @@ package rocketmq
 import (
 	"context"
 
+	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/duolacloud/broker-core"
 )
+
+type producerInterceptorsConfigKey struct{}
+
+func WithProducerInterceptors(interceptors []primitive.Interceptor) broker.Option {
+	return setBrokerOption(producerInterceptorsConfigKey{}, interceptors)
+}
+
+type consumerInterceptorsConfigKey struct{}
+
+func WithConsumerInterceptors(interceptors []primitive.Interceptor) broker.Option {
+	return setBrokerOption(consumerInterceptorsConfigKey{}, interceptors)
+}
 
 type consumeGoroutineNumsConfigKey struct{}
 
@@ -22,6 +35,12 @@ type retryConfigKey struct{}
 
 func WithRetry(retry int) broker.Option {
 	return setBrokerOption(retryConfigKey{}, retry)
+}
+
+type tracingEnabledConfigKey struct{}
+
+func WithTracingEnabled(v int) broker.Option {
+	return setBrokerOption(tracingEnabledConfigKey{}, v)
 }
 
 type queueNumsConfigKey struct{}
@@ -56,6 +75,7 @@ func defaultOptions() broker.Options {
 
 	opts.Context = context.WithValue(opts.Context, retryConfigKey{}, 1)
 	opts.Context = context.WithValue(opts.Context, groupNameConfigKey{}, "default")
+	opts.Context = context.WithValue(opts.Context, tracingEnabledConfigKey{}, true)
 
 	return opts
 }
