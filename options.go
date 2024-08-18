@@ -39,7 +39,7 @@ func WithRetry(retry int) broker.Option {
 
 type tracingEnabledConfigKey struct{}
 
-func WithTracingEnabled(v int) broker.Option {
+func WithTracingEnabled(v bool) broker.Option {
 	return setBrokerOption(tracingEnabledConfigKey{}, v)
 }
 
