@@ -56,12 +56,6 @@ func SubscribeContext(ctx context.Context) broker.SubscribeOption {
 	return setSubscribeOption(subscribeContextKey{}, ctx)
 }
 
-type shardingKeyConfigKey struct{}
-
-func WithShardingKey(shardingKey string) broker.PublishOption {
-	return setPublishOption(shardingKeyConfigKey{}, shardingKey)
-}
-
 type delayLevelConfigKey struct{}
 
 func WithDelayLevel(level int) broker.PublishOption {

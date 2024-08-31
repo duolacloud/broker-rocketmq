@@ -216,11 +216,8 @@ func (k *kBroker) Publish(ctx context.Context, topic string, msg *broker.Message
 		m.WithDelayTimeLevel(delayLevel)
 	}
 
-	if shardingKeyConfig := k.opts.Context.Value(shardingKeyConfigKey{}); shardingKeyConfig != nil {
-		shardingKey, ok := shardingKeyConfig.(string)
-		if ok {
-			m.WithShardingKey(shardingKey)
-		}
+	if pubopts.ShardingKey != "" {
+		m.WithShardingKey(shardingKey)
 	}
 
 	if k.producer != nil {
