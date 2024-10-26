@@ -6,7 +6,7 @@ toolchain go1.22.1
 
 require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
-	github.com/duolacloud/broker-core v0.0.5
+	github.com/duolacloud/broker-core v0.0.6
 	go.opentelemetry.io/otel v1.28.0
 	go.opentelemetry.io/otel/trace v1.28.0
 	google.golang.org/grpc v1.65.0

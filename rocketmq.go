@@ -217,7 +217,7 @@ func (k *kBroker) Publish(ctx context.Context, topic string, msg *broker.Message
 	}
 
 	if pubopts.ShardingKey != "" {
-		m.WithShardingKey(shardingKey)
+		m.WithShardingKey(pubopts.ShardingKey)
 	}
 
 	if k.producer != nil {
